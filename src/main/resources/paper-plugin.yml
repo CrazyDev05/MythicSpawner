@@ -1,0 +1,15 @@
+name: MythicSpawner
+version: '1.0.0'
+main: de.crazydev22.spawner.MythicSpawner
+api-version: '1.21'
+load: STARTUP
+authors: [ CrazyDev22 ]
+
+dependencies:
+  server:
+    Oraxen:
+      load: BEFORE
+      required: true
+    MythicMobs:
+      load: BEFORE
+      required: true

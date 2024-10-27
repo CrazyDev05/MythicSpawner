@@ -1,4 +1,4 @@
-package de.crazydev22.mythicSpawner.oraxen;
+package de.crazydev22.spawner.oraxen;
 
 import io.th0rgal.oraxen.mechanics.Mechanic;
 import io.th0rgal.oraxen.mechanics.MechanicFactory;
@@ -17,16 +17,20 @@ public class Spawner extends Mechanic {
     private final int range;
     private final int maxEntities;
     private final int spawnCount;
+    private final double minLevel;
+    private final double maxLevel;
 
     protected Spawner(MechanicFactory factory, ConfigurationSection section) {
         super(factory, section);
         mobType = section.getString("mobType");
         playerRange = section.getInt("playerRange", 16);
         minDelay = section.getInt("minDelay", 200);
-        maxDelay = section.getInt("maxDelay", 600);
+        maxDelay = section.getInt("maxDelay", 800);
         range = section.getInt("range", 4);
         maxEntities = section.getInt("maxEntities", 6);
         spawnCount = section.getInt("spawnCount", 4);
+        minLevel = section.getDouble("minLevel", 1.0D);
+        maxLevel = section.getDouble("maxLevel", 1.0D);
     }
 
     public SpawnerData toData(Block block) {
@@ -37,6 +41,7 @@ public class Spawner extends Mechanic {
                 .setMaxDelay(maxDelay)
                 .setRange(range)
                 .setMaxEntities(maxEntities)
-                .setSpawnCount(spawnCount);
+                .setSpawnCount(spawnCount)
+                .skipTick();
     }
 }

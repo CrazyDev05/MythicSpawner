@@ -1,17 +1,19 @@
-package de.crazydev22.mythicSpawner;
+package de.crazydev22.spawner;
 
+import art.arcane.multiburst.MultiBurst;
 import com.jeff_media.customblockdata.CustomBlockData;
-import de.crazydev22.mythicSpawner.cache.CacheManager;
-import de.crazydev22.mythicSpawner.cache.ChunkCache;
-import de.crazydev22.mythicSpawner.cache.WorldCache;
-import de.crazydev22.mythicSpawner.oraxen.SpawnerData;
-import de.crazydev22.mythicSpawner.oraxen.SpawnerFactory;
+import de.crazydev22.spawner.cache.CacheManager;
+import de.crazydev22.spawner.cache.ChunkCache;
+import de.crazydev22.spawner.cache.WorldCache;
+import de.crazydev22.spawner.oraxen.SpawnerData;
+import de.crazydev22.spawner.oraxen.SpawnerFactory;
 import io.th0rgal.oraxen.api.OraxenItems;
 import io.th0rgal.oraxen.api.events.OraxenNativeMechanicsRegisteredEvent;
 import io.th0rgal.oraxen.mechanics.MechanicsManager;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
@@ -30,12 +32,16 @@ public final class MythicSpawner extends JavaPlugin implements Listener {
     @Getter
     private final CacheManager cacheManager = new CacheManager(new HashMap<>());
 
+    public static MultiBurst burst;
+
     public MythicSpawner() {
         instance = this;
     }
 
     @Override
     public void onEnable() {
+        burst = new MultiBurst("MythicSpawner", 1);
+
         CustomBlockData.registerListener(this);
         Bukkit.getPluginManager().registerEvents(this, this);
         Bukkit.getScheduler().runTaskTimer(this, this::tick, 0, 2);
@@ -45,6 +51,7 @@ public final class MythicSpawner extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         cacheManager.unload();
+        burst.close();
     }
 
     private void tick() {
@@ -75,11 +82,12 @@ public final class MythicSpawner extends JavaPlugin implements Listener {
 
     @EventHandler
     private void onMechanicRegister(OraxenNativeMechanicsRegisteredEvent event) {
+        getLogger().info("Registering oraxen mechanic");
         MechanicsManager.registerMechanicFactory("spawner", new SpawnerFactory(this), true);
         OraxenItems.loadItems();
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     private void onChunkLoad(ChunkLoadEvent event) {
         if (event.isNewChunk())
             return;
@@ -87,12 +95,12 @@ public final class MythicSpawner extends JavaPlugin implements Listener {
         cacheManager.loadChunk(event.getChunk());
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     private void onChunkUnload(ChunkUnloadEvent event) {
         cacheManager.unloadChunk(event.getChunk());
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     private void onWorldUnload(WorldUnloadEvent event) {
         cacheManager.unloadWorld(event.getWorld());
     }

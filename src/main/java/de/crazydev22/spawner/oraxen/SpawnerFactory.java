@@ -1,6 +1,6 @@
-package de.crazydev22.mythicSpawner.oraxen;
+package de.crazydev22.spawner.oraxen;
 
-import de.crazydev22.mythicSpawner.MythicSpawner;
+import de.crazydev22.spawner.MythicSpawner;
 import io.th0rgal.oraxen.mechanics.MechanicFactory;
 import io.th0rgal.oraxen.mechanics.MechanicsManager;
 import org.bukkit.configuration.ConfigurationSection;

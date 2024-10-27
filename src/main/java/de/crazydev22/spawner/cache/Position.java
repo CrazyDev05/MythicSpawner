@@ -1,4 +1,4 @@
-package de.crazydev22.mythicSpawner.cache;
+package de.crazydev22.spawner.cache;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

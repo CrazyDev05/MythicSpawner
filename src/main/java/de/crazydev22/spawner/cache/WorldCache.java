@@ -1,8 +1,8 @@
-package de.crazydev22.mythicSpawner.cache;
+package de.crazydev22.spawner.cache;
 
 import com.jeff_media.customblockdata.CustomBlockData;
-import de.crazydev22.mythicSpawner.MythicSpawner;
-import de.crazydev22.mythicSpawner.oraxen.SpawnerData;
+import de.crazydev22.spawner.MythicSpawner;
+import de.crazydev22.spawner.oraxen.SpawnerData;
 import lombok.extern.java.Log;
 import org.bukkit.Chunk;
 import org.jetbrains.annotations.NotNull;
@@ -43,7 +43,12 @@ public record WorldCache(@NotNull UUID world, @NotNull Map<ChunkPosition, ChunkC
 
     public void removeData(@NotNull Position position, boolean delete) {
         getChunk(position.getChunkPosition())
-                .ifPresent(chunk -> chunk.remove(position, delete));
+                .ifPresent(chunk -> {
+                    chunk.remove(position, delete);
+                    if (chunk.isEmpty()) {
+                        map.remove(chunk.position());
+                    }
+                });
     }
 
     @NotNull
@@ -65,14 +70,18 @@ public record WorldCache(@NotNull UUID world, @NotNull Map<ChunkPosition, ChunkC
                 return null;
 
             var map = new HashMap<Position, SpawnerData>();
-            blocks.forEach(block -> {
+            var burst = MythicSpawner.burst.burst(blocks.size());
+
+            blocks.forEach(block -> burst.queue(() -> {
                 try {
                     var data = SpawnerData.deserialize(block);
                     map.put(Position.fromBlock(block), data);
                 } catch (IOException e) {
                     log.log(Level.SEVERE, "Failed to load spawner data at " + block.getLocation(), e);
                 }
-            });
+            }));
+
+            burst.complete();
 
             return new ChunkCache(p, map);
         });
@@ -84,7 +93,7 @@ public record WorldCache(@NotNull UUID world, @NotNull Map<ChunkPosition, ChunkC
 
         ChunkPosition position = new ChunkPosition(chunk.getWorld().getUID(), chunk.getX(), chunk.getZ());
         if (!map.containsKey(position))
-            throw new IllegalArgumentException("Chunk " + chunk + " is not loaded");
+            return;
 
         map.remove(position).unload();
     }

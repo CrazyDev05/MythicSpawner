@@ -1,7 +1,9 @@
-package de.crazydev22.mythicSpawner.oraxen;
+package de.crazydev22.spawner.oraxen;
 
-import de.crazydev22.mythicSpawner.MythicSpawner;
-import de.crazydev22.mythicSpawner.cache.Position;
+import de.crazydev22.spawner.MythicSpawner;
+import io.th0rgal.oraxen.api.OraxenItems;
+import io.th0rgal.oraxen.api.events.furniture.OraxenFurnitureBreakEvent;
+import io.th0rgal.oraxen.api.events.furniture.OraxenFurniturePlaceEvent;
 import io.th0rgal.oraxen.api.events.noteblock.OraxenNoteBlockBreakEvent;
 import io.th0rgal.oraxen.api.events.noteblock.OraxenNoteBlockPlaceEvent;
 import io.th0rgal.oraxen.api.events.stringblock.OraxenStringBlockBreakEvent;
@@ -34,20 +36,19 @@ public record SpawnerListener(SpawnerFactory factory, MythicSpawner plugin) impl
         onBlockPlace(event.getBlock(), event.getItemInHand());
     }
 
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onFurniturePlace(OraxenFurniturePlaceEvent event) {
+        onBlockPlace(event.getBaseEntity().getLocation().getBlock(), event.getItemInHand());
+    }
+
     private void onBlockPlace(Block block, ItemStack itemStack) {
-        if (!factory.isNotImplementedIn(itemStack))
+        if (factory.isNotImplementedIn(OraxenItems.getIdByItem(itemStack)))
             return;
         Spawner spawner = (Spawner) factory.getMechanic(itemStack);
-        if (spawner == null)
+        if (spawner == null || plugin.getCacheManager().hasData(block))
             return;
 
-        var opt = plugin.getCacheManager().getWorld(block.getWorld().getUID());
-        if (opt.isEmpty()) {
-            log.warning("Failed to get world for block " + block);
-            return;
-        }
-        var data = spawner.toData(block);
-        opt.get().setData(Position.fromBlock(data.getBlock()), data);
+        plugin.getCacheManager().setData(spawner.toData(block));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -70,8 +71,12 @@ public record SpawnerListener(SpawnerFactory factory, MythicSpawner plugin) impl
         onBlockBreak(event.getBlock());
     }
 
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onFurnitureBreak(OraxenFurnitureBreakEvent event) {
+        onBlockBreak(event.getBaseEntity().getLocation().getBlock());
+    }
+
     private void onBlockBreak(Block block) {
-        plugin.getCacheManager().getWorld(block.getWorld().getUID())
-                .ifPresent(cache -> cache.removeData(Position.fromBlock(block), true));
+        plugin.getCacheManager().removeData(block);
     }
 }

@@ -1,6 +1,6 @@
-package de.crazydev22.mythicSpawner.cache;
+package de.crazydev22.spawner.cache;
 
-import de.crazydev22.mythicSpawner.oraxen.SpawnerData;
+import de.crazydev22.spawner.oraxen.SpawnerData;
 import lombok.NonNull;
 import lombok.extern.java.Log;
 import org.jetbrains.annotations.NotNull;

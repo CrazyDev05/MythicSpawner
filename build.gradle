@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id "com.gradleup.shadow" version "8.3.3"
+    id "xyz.jpenilla.run-paper" version "2.3.1"
 }
 
 group = 'de.crazydev22'
@@ -7,18 +9,22 @@ version = '1.0.0'
 
 repositories {
     mavenCentral()
-    maven {
-        name = "papermc-repo"
-        url = "https://repo.papermc.io/repository/maven-public/"
-    }
-    maven {
-        name = "sonatype"
-        url = "https://oss.sonatype.org/content/groups/public/"
-    }
+    maven { url "https://repo.papermc.io/repository/maven-public/" }
+    maven { url "https://oss.sonatype.org/content/groups/public/" }
+    maven { url 'https://mvn.lumine.io/repository/maven-public/' }
+    maven { url "https://repo.oraxen.com/releases" }
+    maven { url "https://jitpack.io" }
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT")
+    compileOnly 'org.projectlombok:lombok:1.18.34'
+    annotationProcessor 'org.projectlombok:lombok:1.18.34'
+    compileOnly "io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT"
+
+    compileOnly "io.th0rgal:oraxen:1.183.0"
+    compileOnly 'io.lumine:Mythic-Dist:5.6.1'
+    implementation 'com.jeff-media:custom-block-data:2.2.3'
+    implementation 'com.github.VolmitDev:MultiBurst:22.9.2'
 }
 
 def targetJavaVersion = 21
@@ -43,7 +49,19 @@ processResources {
     def props = [version: version]
     inputs.properties props
     filteringCharset 'UTF-8'
-    filesMatching('plugin.yml') {
+    filesMatching('paper-plugin.yml') {
         expand props
     }
 }
+
+runServer {
+    minecraftVersion("1.21.1")
+}
+
+shadowJar {
+    archiveClassifier = null
+    relocate 'com.jeff_media.customblockdata', 'de.crazydev22.spawner.customblockdata'
+    relocate 'art.arcane.multiburst', 'de.crazydev22.spawner.multiburst'
+}
+
+tasks.build.dependsOn(shadowJar)
